@@ -37,7 +37,8 @@ try:
         },
         TableName='SubdomainList',
     )
-except dynamodb_client.exceptions.ResourceInUseException:
+except dynamodb_client.exceptions.ResourceInUseException as e:
+    print(e)
     pass
 
 # Define my variables
