@@ -5,42 +5,10 @@ import json
 import requests
 import boto3
 
-#AWS DB Variables and such.
-#Check to see if table exists. If not then create it. 
-dynamodb_client = boto3.client('dynamodb')
-#I need to set up the correct db so that it points to my local db. 
-try:
-    response = dynamodb_client.create_table(
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'Domain',
-                'AttributeType': 'S',
-            },
-            {
-                'AttributeName': 'SubDomain',
-                'AttributeType': 'S',
-            },
-        ],
-        KeySchema=[
-            {
-                 'AttributeName': 'Domain',
-                'KeyType': 'HASH',
-            },
-            {
-                'AttributeName': 'SubDomain',
-                'KeyType': 'RANGE',
-            },
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapcityUnits': 5,
-        },
-        TableName='SubdomainList',
-    )
-except dynamodb_client.exceptions.ResourceInUseException as e:
-    print(e)
-    pass
-
+#Removed the part where i check/create a table. It is not needed as the table will be created prior to. 
+# AWS DynamoDB information should go here. TO be used in the for statment.
+if not dynamodb:
+        dynamodb = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
 # Define my variables
 domain = ""
 subdomain = ""
@@ -53,4 +21,13 @@ domain = sys.argv[1]
 r = requests.get(url + domain + url2)
 jsondata = json.loads(r.text)
 for (key,value) in enumerate(jsondata):
-    print(value['name_value'])
+    #print(value['name_value'])
+    subdomain = value['name_value']
+    table = dynamodb.Table('SubDomains')
+    response = table.put_item(
+        Item={
+            "SubDomain": subdomain,
+            "Domain": domain
+        }
+    )
+    print("subdomain")
